@@ -13,6 +13,47 @@ Deliver an auditable package that lets the user check what was done, why it was 
 
 Never blur missing provenance. If key information is unavailable, stop, ask, or downgrade the report status.
 
+## Reader Orientation Rule
+
+Default `REPORT.md` is a reader-first processing summary, not the full audit record. It must be self-contained for a reader who knows only the broad project topic, not the run-internal folder scan, script names, step IDs, abbreviations, or prior agent context.
+
+Keep orientation small but explicit. At the top of `REPORT.md`, give only the few context facts needed to understand the processing flow:
+
+- the project/problem in one sentence;
+- the concrete dataset/input family in one sentence;
+- the processing goal in one sentence;
+- definitions for any IDs, abbreviations, variables, or labels reused in the report.
+
+Do not flood the report with background, but never drop unexplained internal context into it. In `REPORT.md`, do not mention a file, variable, parameter, task slug, figure ID, step ID, abbreviation, method label, or prior result without either defining it in the orientation section or making its meaning obvious in the same row/sentence.
+
+Avoid context cliffs: bare path lists, unexplained filenames, unexplained folder-derived facts, unexplained acronyms, and statements that assume the reader has read the source scripts, manuscript, or previous reports. Use plain-language labels next to technical IDs. Put detailed provenance, fingerprints, environment details, full QC surfaces, and expanded figure metadata in `AUDIT_MANIFEST.json`, `COMMAND_LOG.md`, `QC_CHECKLIST.md`, and `FIGURE_INDEX.md`; `REPORT.md` should summarize and link to those files.
+
+## Project Configuration
+
+Before creating or revising a report package, look for this file under the project root:
+
+```text
+00_project/scientific_data_report_config.json
+```
+
+If it exists, load it and follow it before applying generic defaults. Supported configuration keys include:
+
+- `default_language`: `zh`, `en`, or `auto`. Use this for all user-facing report documents unless the user explicitly asks otherwise.
+- `report_style.context_policy`: default `minimal_but_self_contained`; keep `REPORT.md` concise but never context-broken.
+- `report_style.technical_id_policy`: require plain-language labels beside technical IDs, filenames, variables, step IDs, and output IDs.
+- `report_style.figure_caption_detail`: use compact captions in `REPORT.md` and complete captions in `FIGURE_INDEX.md`.
+- `workflow.formal_requires_plan_confirmation`: whether formal mode must stop after `PROCESSING_PLAN.md` unless preapproved.
+- `workflow.prefer_task_package_runs`: whether task packages should be preferred for placement.
+- `workflow.update_graphify_after_report_changes`: whether project graph maintenance is expected after report/doc changes.
+
+If `00_project/` exists but the config file is missing, generate it before creating new report packages. If `00_project/` is missing, run the config wizard to create `00_project/` and the config file. Use the helper script when possible:
+
+```bash
+python <skill_dir>/scripts/init_report_package.py --root . --init-config
+```
+
+Wizard defaults should be conservative: `default_language=zh` for Chinese-language research projects, `context_policy=minimal_but_self_contained`, `technical_id_policy=technical_ids_must_have_plain_language_labels`, `formal_requires_plan_confirmation=true`, and `prefer_task_package_runs=true`. Ask only when the answer is genuinely project-specific; otherwise write the default and let the user edit the JSON later.
+
 ## Required Package
 
 Package placement:
@@ -55,6 +96,12 @@ logs/
 `AUDIT_MANIFEST.json` is the machine-readable source of truth. YAML is optional.
 
 ## Helper Scripts
+
+Create or refresh the project-level config when needed:
+
+```bash
+python <skill_dir>/scripts/init_report_package.py --root . --init-config
+```
 
 Create a package with:
 
@@ -188,22 +235,22 @@ The report cannot just say "generated figure X." It must state how X was derived
 
 ## Figures And Captions
 
-Reports that produce, audit, or rely on figures must include figures and figure captions.
+Reports that produce, audit, or rely on figures must include figure references and captions, but keep `REPORT.md` captions compact.
 
 Required behavior:
 
 - Put generated or copied review figures under `figures/`, or reference existing figure paths if copying would duplicate large files.
 - Add every review-relevant figure to `FIGURE_INDEX.md`.
-- In `REPORT.md`, embed or link the key figures near the discussion that uses them.
-- Every figure must have a caption that states what is shown, data source, processing step IDs, key parameters, units/scale/colorbar meaning, and any caveat needed for interpretation.
-- Every figure output in `AUDIT_MANIFEST.json` must include `caption`, `derived_from_steps`, and `derived_from_inputs`.
+- In `REPORT.md`, embed or link only the figures needed to follow the processing outcome.
+- In `REPORT.md`, use one-sentence captions that state what is shown in plain language, define or avoid unfamiliar input/step IDs, give the key unit/scale/colorbar meaning, and add one caveat if needed.
+- In `FIGURE_INDEX.md` and `AUDIT_MANIFEST.json`, keep the complete figure metadata: data source, processing step IDs, key parameters, units/scale/colorbar meaning, caption, caveats, `derived_from_steps`, and `derived_from_inputs`.
 - If a figure is pre-existing, label it `existing_file` and record its source path/fingerprint when possible.
 - If a figure is only illustrative or exploratory, label it as such; do not let it support a formal claim.
 
-Minimal caption pattern:
+Minimal `REPORT.md` caption pattern:
 
 ```text
-Figure N. What is shown. Input IDs and step IDs. Key parameters and units. Interpretation boundary or caveat.
+Figure N. What is shown; input/step IDs; key unit/scale; one caveat if needed.
 ```
 
 ## Execution Evidence
@@ -237,7 +284,13 @@ If environment or code version cannot be confirmed, reproducibility is at most `
 
 ## Scientific Review
 
-`REPORT.md` and `QC_CHECKLIST.md` must include:
+`QC_CHECKLIST.md` is the complete scientific review surface. `REPORT.md` should contain only the highest-signal review outcome:
+
+- 3-5 manual review targets, blockers, or downgrade reasons.
+- One-line status for units/coordinates/scale/calibration, key filters/statistics/thresholds, and figure readability.
+- Any sensitivity or plausibility result that changes confidence.
+
+`QC_CHECKLIST.md` must still include:
 
 - Unit and coordinate checks.
 - Sampling rate, time step, spatial scale, and calibration checks.
@@ -253,7 +306,7 @@ Do not write "no issue found" unless the attack surfaces checked are listed.
 
 ## Claims Boundary
 
-Separate data-processing conclusions from scientific interpretation:
+Separate data-processing conclusions from scientific interpretation. Keep `REPORT.md` claim boundaries short; store expanded claim lists in `AUDIT_MANIFEST.json` when needed.
 
 - `Claims allowed by this processing`
 - `Claims not supported by this processing`
