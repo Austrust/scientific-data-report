@@ -31,7 +31,6 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "formal_requires_plan_confirmation": True,
         "raw_data_read_only": True,
         "prefer_task_package_runs": True,
-        "update_graphify_after_report_changes": True,
     },
     "report_package": {
         "required_files": [

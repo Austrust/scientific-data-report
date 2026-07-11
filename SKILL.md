@@ -44,7 +44,6 @@ If it exists, load it and follow it before applying generic defaults. Supported 
 - `report_style.figure_caption_detail`: use compact captions in `REPORT.md` and complete captions in `FIGURE_INDEX.md`.
 - `workflow.formal_requires_plan_confirmation`: whether formal mode must stop after `PROCESSING_PLAN.md` unless preapproved.
 - `workflow.prefer_task_package_runs`: whether task packages should be preferred for placement.
-- `workflow.update_graphify_after_report_changes`: whether project graph maintenance is expected after report/doc changes.
 
 If `00_project/` exists but the config file is missing, generate it before creating new report packages. If `00_project/` is missing, run the config wizard to create `00_project/` and the config file. Use the helper script when possible:
 
